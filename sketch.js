@@ -384,7 +384,7 @@ function drawCurrentDay() {
   const dayOfYear = getDayOfYear(utcDate);
   const x = map(dayOfYear, 1, 366, 0, width);
   const seasonColor = getSeasonColor(utcDate);
-  stroke(seasonColor);
+  stroke(0);
   strokeWeight(1);
   line(x, 0, x, height);
   noStroke();
