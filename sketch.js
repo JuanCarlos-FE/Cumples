@@ -451,6 +451,17 @@ function getGeneration(birthDate, approximate) {
   return "Greatest Generation";
 }
 
+function drawCurrentDay() {
+  const today = new Date();
+  const utcDate = new Date(Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate()));
+  const dayOfYear = getDayOfYear(utcDate);
+  const x = map(dayOfYear, 1, 366, 0, width);
+  stroke(255, 0, 0); // ROJO, muy visible
+  strokeWeight(0.2);   // Más grueso para depurar
+  line(x, 0, x, height);
+  noStroke();
+}
+
 function drawBirthdays() {
   let birthdayGroups = {};
   for (const birthday of birthdays) {
