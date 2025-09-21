@@ -384,8 +384,8 @@ function drawCurrentDay() {
   const dayOfYear = getDayOfYear(utcDate);
   const x = map(dayOfYear, 1, 366, 0, width);
   const seasonColor = getSeasonColor(utcDate);
-  stroke(0, 0, 80);
-  strokeWeight(2);
+  stroke(seasonColor);
+  strokeWeight(1);
   line(x, 0, x, height);
   noStroke();
 }
@@ -483,6 +483,7 @@ function drawBirthdays() {
       year = Number(year);
       month = Number(month);
       day = Number(day);
+
       let realDate = year && month && day ? new Date(Date.UTC(year, month - 1, day)) : null;
       let approximate = !!birthday.approximate || !realDate || isNaN(realDate.getTime());
       let age = calculateAge(realDate, today, approximate);
@@ -496,30 +497,42 @@ function drawBirthdays() {
       let fontSize = 10;
       let pulseFactor = 1;
       let displayText = birthday.initials + (approximate ? " ~" : "");
-      const isBirthdayToday =
-        !approximate &&
-        realDate &&
-        today.getUTCDate() === realDate.getUTCDate() &&
-        today.getUTCMonth() === realDate.getUTCMonth();
-      if (isBirthdayToday) {
-        pulseFactor = map(sin(frameCount * 0.2), -1, 1, 1, 2);
-        const saturation = map(sin(frameCount * 0.4), -1, 1, 30, 100);
-        circleColor = color(hue(circleColor), saturation, brightness(circleColor));
-        displayText = (birthday.name || birthday.initials) + (approximate ? " ~" : "");
-        fontSize = 20 * pulseFactor;
+
+      // --------- PALPITAR/VIBRAR: ---------
+      let showPulse = false;
+      if (realDate && !approximate) {
+        let now = new Date(Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate()));
+        let nextBday = new Date(Date.UTC(now.getUTCFullYear(), realDate.getUTCMonth(), realDate.getUTCDate()));
+        if (nextBday < now) nextBday.setUTCFullYear(now.getUTCFullYear() + 1);
+        let daysToBday = Math.floor((nextBday - now) / (1000 * 60 * 60 * 24));
+        if (daysToBday === 0) {
+          // vibración fuerte el mero día
+          pulseFactor = map(sin(frameCount * 0.45), -1, 1, 1.2, 2.1);
+        } else if (daysToBday > 0 && daysToBday <= 7) {
+          // pulso leve entre 1 y 7 días antes
+          pulseFactor = map(sin(frameCount * 0.13), -1, 1, 1, 1.19);
+        }
+        if (daysToBday <= 7 && daysToBday >= 0) {
+          const saturation = map(sin(frameCount * 0.24), -1, 1, 40, 100);
+          circleColor = color(hue(circleColor), saturation, brightness(circleColor));
+        }
+        if (daysToBday === 0) {
+          displayText = (birthday.name || birthday.initials) + (approximate ? " ~" : "");
+          fontSize = 20 * pulseFactor;
+        }
       }
+      // --------- FIN PALPITAR/VIBRAR ---------
+
       circleSize = baseSize * pulseFactor;
       fontSize = 10 * pulseFactor;
+
       fill(circleColor);
       ellipse(x, y, circleSize, circleSize);
       fill(0, 0, 0);
       textSize(fontSize);
       textAlign(CENTER, CENTER);
       text(displayText, x, y);
-      if (isBirthdayToday && age !== "~") {
-        textSize(12);
-        text(age, x, y + 15);
-      }
+
       if (!isTouchDevice && dist(mouseX, mouseY, x, y) < circleSize / 2) {
         hoveredBirthday = birthday;
       }
