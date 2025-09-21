@@ -206,7 +206,7 @@ function createPanelElements() {
 function refreshListView() {
   let list = select("#panelList");
   list.html("");
-  birthdays.forEach((p, i) => {
+  [...birthdays].reverse().forEach((p, i) => {
     let d = createDiv("").parent(list);
     d.style("display", "flex");
     d.style("align-items", "center");
